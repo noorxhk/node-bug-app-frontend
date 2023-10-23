@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import ProductCard from "../../components/projects/ProductCard";
 import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import Pagination from '@material-ui/lab/Pagination';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import config from '../../config'
 
@@ -42,6 +43,8 @@ const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const projectsPerPage = 6;
 
   const handleProjectUpdate = (updatedProjects) => {
     setProjects(updatedProjects);
@@ -89,6 +92,14 @@ const Projects = () => {
     }
   }, [user, navigate]);
 
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = projects.slice(indexOfFirstProject, indexOfLastProject);
+
+  const paginate = (event, page) => {
+    setCurrentPage(page);
+  };
+
   if (isLoading) {
     return (
       <div
@@ -114,14 +125,24 @@ const Projects = () => {
       <Header user={user} onProjectUpdate={handleProjectUpdate}/>
 
       <Grid container style={{marginLeft:"10px",justifyContent: "space-around"}}>
-      {projects && projects.length > 0 ? (
-        projects.map((project, index) => (
+      {currentProjects && currentProjects.length > 0 ? (
+        currentProjects.map((project, index) => (
           <ProductCard project={project} key={index} user={user} />
         ))
       ) : (
         <Typography variant="h3" color="secondary" style={{ marginTop: "200px", height:"100%"}}>No Projects Found</Typography>
       )}
       </Grid>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        {projects.length > projectsPerPage && (
+          <Pagination
+            count={Math.ceil(projects.length / projectsPerPage)}
+            page={currentPage}
+            onChange={paginate}
+            shape="rounded"
+          />
+        )}
+      </div>
    
   </Container>
    );

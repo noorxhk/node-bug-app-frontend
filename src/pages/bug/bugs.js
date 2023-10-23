@@ -5,6 +5,7 @@ import BugHeader from "../../components/bugs/header";
 import SubHeader from "../../components/bugs/subHeader";
 import BugTable from "../../components/bugs/bugTable";
 import { useLocation } from 'react-router-dom';
+import Pagination from '@material-ui/lab/Pagination';
 import { useNavigate } from 'react-router-dom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import config from "../../config";
@@ -19,6 +20,8 @@ const Bugs = () => {
   const [bugs, setBugs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const bugsPerPage = 10;
 
   const handleBugUpdate = (updatedBugs) => {
     setBugs(updatedBugs);
@@ -79,6 +82,14 @@ const Bugs = () => {
     }
   }, [project, user]);
 
+  const indexOfLastBug = currentPage * bugsPerPage;
+  const indexOfFirstBug = indexOfLastBug - bugsPerPage;
+  const currentBugs = bugs.slice(indexOfFirstBug, indexOfLastBug);
+
+  const paginate = (event, page) => {
+    setCurrentPage(page);
+  };
+
   if (isLoading) {
     return (
       <div
@@ -104,11 +115,29 @@ const Bugs = () => {
       <Navbar user={user}/>
       <BugHeader project={project} user={user} onBugUpdate={handleBugUpdate}/>
       <SubHeader/>
-      {bugs && bugs.length > 0 ? (
-        <BugTable bugs={bugs} onBugUpdate={handleBugUpdate} />
+      {currentBugs && currentBugs.length > 0 ? (
+        <BugTable bugs={currentBugs} onBugUpdate={handleBugUpdate} />
       ) : (
-        <Typography variant="h3" color="secondary" style={{ marginTop: "200px", width: "100%", textAlign: "center"}}>No Bugs Found</Typography>
+        <div>
+          {bugs.length > 0 ? (
+            <BugTable bugs={bugs} onBugUpdate={handleBugUpdate} />
+          ) : (
+            <Typography variant="h3" color="secondary" style={{ marginTop: "200px", width: "100%", textAlign: "center" }}>
+              No Bugs Found
+            </Typography>
+          )}
+        </div>
       )}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        {bugs.length > bugsPerPage && (
+          <Pagination
+            count={Math.ceil(bugs.length / bugsPerPage)}
+            page={currentPage}
+            onChange={paginate}
+            shape="rounded"
+          />
+        )}
+      </div>
     </Container>
 
   );
